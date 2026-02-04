@@ -23,14 +23,17 @@ class ProductController extends Controller
 
     /**
      * Menampilkan daftar semua produk.
-     * **
+     * ***
      */
     public function index()
     {
-        $fields = ['id', 'sku', 'name', 'thumbnail', 'price', 'category_id'];
-        $product = $this->productSevice->getAll($fields);
 
-        return response()->json(ProductResource::collection($product));
+        $fields = ['id', 'sku', 'name', 'thumbnail', 'price', 'category_id'];
+        $products = $this->productSevice->getAll($fields);
+
+        // Kirim data ke file blade: resources/views/products/index.blade.php
+        return view('products.index', compact('products'));
+        // return response()->json(ProductResource::collection($product));
     }
 
     /**
@@ -39,14 +42,15 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        $product = $this->productSevice->create($request->validated());
-        return response()->json(new ProductResource($product), 201);
+        $this->productSevice->create($request->validated());
+        return redirect()->route('products.index')->with('success', 'Product created successfully');
+        // return response()->json(new ProductResource($product), 201);
     }
 
 
     /**
      * Menampilkan detail satu produk spesifik.
-     * **
+     * ***
      */
     public function show(int $id)
     {
@@ -54,9 +58,11 @@ class ProductController extends Controller
             $fields = ['id', 'name', 'thumbnail', 'price', 'category_id'];
             $product = $this->productSevice->getById($id, $fields);
 
-            return response()->json(new ProductResource($product));
+            return view('products.show', compact('product'));
+            // return response()->json(new ProductResource($product));
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'product not found'], 404);
+            abort(404, 'Product not found');
+            // return response()->json(['message' => 'product not found'], 404);
         }
     }
 
